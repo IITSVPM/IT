@@ -1,0 +1,111 @@
+#include <SPI.h>
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+
+#define SCREEN_WIDTH 128 
+#define SCREEN_HEIGHT 64 
+
+const int TRIG_PIN   = 12; 
+const int ECHO_PIN   = 13; 
+
+Adafruit_SSD1306 oled(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1); 
+
+String tempString;
+
+void setup() {
+pinMode(TRIG_PIN, OUTPUT); 
+pinMode(ECHO_PIN, INPUT);
+
+  Serial.begin(9600);
+
+  
+  if (!oled.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    while (true);
+  }
+
+  delay(2000);         
+  oled.clearDisplay(); 
+
+  oled.setTextSize(2);      
+  oled.setTextColor(WHITE); 
+  oled.setCursor(0, 10);    
+
+  tempString.reserve(10);   
+}
+
+void loop() {
+  
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+  
+
+  
+  long duration_us = pulseIn(ECHO_PIN, HIGH);
+  
+  float distance_cm = 0.017 * duration_us;
+
+  
+  Serial.print("distance: ");
+  Serial.print(distance_cm);
+  Serial.println(" cm");
+
+  tempString  = String(distance_cm, 2); 
+  tempString += " cm";
+
+  Serial.println(tempString);    
+  oledDisplayCenter(tempString); 
+}
+
+void oledDisplayCenter(String text) {
+  int16_t x1;
+  int16_t y1;
+  uint16_t width;
+  uint16_t height;
+
+  oled.getTextBounds(text, 0, 0, &x1, &y1, &width, &height);
+
+  
+  oled.clearDisplay(); 
+  oled.setCursor((SCREEN_WIDTH - width) / 2, (SCREEN_HEIGHT - height) / 2);
+  oled.println(text); 
+  oled.display();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* inculde library
+1. SSD1306 by Adafruit
+2. GFX Library by Adafruit 
+
+Circuit Connections:
+1. Ultrasonic Sensor (HC-SR04):
+2. TRIG pin of the sensor to Digital Pin 12 on Arduino.
+3. ECHO pin of the sensor to Digital Pin 13 on Arduino.
+4. VCC pin of the sensor to 5V on Arduino.
+5. GND pin of the sensor to GND on Arduino.
+
+OLED Display:
+1. VCC pin of OLED to 3.3V on Arduino.
+2. GND pin of OLED to GND on Arduino.
+3. SCL pin of OLED to A5 (SCL) on Arduino.
+4. SDA pin of OLED to A4 (SDA) on Arduino. */
